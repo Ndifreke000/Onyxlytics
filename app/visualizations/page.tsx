@@ -15,7 +15,6 @@ export default function VisualizationsPage() {
   const { metrics } = useSolanaMetrics(10000)
   const [activeTab, setActiveTab] = useState("overview")
 
-  // Sample data for additional visualizations
   const validatorDistribution = [
     { name: "Active", value: metrics.validatorCount },
     { name: "Inactive", value: 150 },
@@ -54,8 +53,10 @@ export default function VisualizationsPage() {
                 BLOCKCHAIN METRICS
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <DashboardChart />
+            <CardContent className="pt-6">
+              <div className="w-full h-[400px] px-4 py-4">
+                <DashboardChart />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -69,8 +70,8 @@ export default function VisualizationsPage() {
                 NETWORK PERFORMANCE
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="bg-accent rounded-lg p-3">
+            <CardContent className="pt-6">
+              <div className="w-full bg-accent rounded-lg p-6">
                 <ChartContainer
                   config={{
                     tps: {
@@ -82,15 +83,24 @@ export default function VisualizationsPage() {
                       color: "var(--chart-2)",
                     },
                   }}
-                  className="h-[400px]"
+                  className="h-[400px] w-full"
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={performanceData}>
+                    <LineChart data={performanceData} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--muted-foreground)" opacity={0.3} />
-                      <XAxis dataKey="time" stroke="var(--muted-foreground)" />
-                      <YAxis stroke="var(--muted-foreground)" />
+                      <XAxis
+                        dataKey="time"
+                        stroke="var(--muted-foreground)"
+                        tick={{ fontSize: 12, dy: 10 }}
+                        label={{ value: "Time", position: "insideBottomRight", offset: -10, fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--muted-foreground)"
+                        tick={{ fontSize: 12, dx: -10 }}
+                        label={{ value: "Value", angle: -90, position: "insideLeft", fontSize: 12 }}
+                      />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
+                      <Legend wrapperStyle={{ paddingTop: "20px" }} />
                       <Line
                         type="monotone"
                         dataKey="tps"
@@ -122,9 +132,9 @@ export default function VisualizationsPage() {
                   PEAK TPS
                 </CardTitle>
               </CardHeader>
-              <CardContent className="bg-accent pt-2 md:pt-6">
+              <CardContent className="bg-accent pt-6 rounded-b-lg">
                 <p className="text-4xl md:text-5xl font-display">2,900</p>
-                <p className="text-xs md:text-sm font-medium text-muted-foreground tracking-wide mt-2">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground tracking-wide mt-4">
                   HIGHEST IN 24H
                 </p>
               </CardContent>
@@ -137,9 +147,9 @@ export default function VisualizationsPage() {
                   AVG LATENCY
                 </CardTitle>
               </CardHeader>
-              <CardContent className="bg-accent pt-2 md:pt-6">
+              <CardContent className="bg-accent pt-6 rounded-b-lg">
                 <p className="text-4xl md:text-5xl font-display">405ms</p>
-                <p className="text-xs md:text-sm font-medium text-muted-foreground tracking-wide mt-2">
+                <p className="text-xs md:text-sm font-medium text-muted-foreground tracking-wide mt-4">
                   AVERAGE SLOT TIME
                 </p>
               </CardContent>
@@ -156,8 +166,8 @@ export default function VisualizationsPage() {
                 VALIDATOR DISTRIBUTION
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="bg-accent rounded-lg p-3">
+            <CardContent className="pt-6">
+              <div className="w-full bg-accent rounded-lg p-6">
                 <ChartContainer
                   config={{
                     active: {
@@ -169,15 +179,24 @@ export default function VisualizationsPage() {
                       color: "var(--chart-2)",
                     },
                   }}
-                  className="h-[300px]"
+                  className="h-[350px] w-full"
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={validatorDistribution}>
+                    <BarChart data={validatorDistribution} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--muted-foreground)" opacity={0.3} />
-                      <XAxis dataKey="name" stroke="var(--muted-foreground)" />
-                      <YAxis stroke="var(--muted-foreground)" />
+                      <XAxis
+                        dataKey="name"
+                        stroke="var(--muted-foreground)"
+                        tick={{ fontSize: 12, dy: 10 }}
+                        label={{ value: "Status", position: "insideBottomRight", offset: -10, fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="var(--muted-foreground)"
+                        tick={{ fontSize: 12, dx: -10 }}
+                        label={{ value: "Count", angle: -90, position: "insideLeft", fontSize: 12 }}
+                      />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
+                      <Legend wrapperStyle={{ paddingTop: "20px" }} />
                       <Bar dataKey="value" fill="var(--chart-1)" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -194,9 +213,9 @@ export default function VisualizationsPage() {
                   ACTIVE VALIDATORS
                 </CardTitle>
               </CardHeader>
-              <CardContent className="bg-accent pt-2 md:pt-6">
+              <CardContent className="bg-accent pt-6 rounded-b-lg">
                 <p className="text-4xl md:text-5xl font-display">{metrics.validatorCount}</p>
-                <p className="text-xs md:text-sm font-medium text-success tracking-wide mt-2">OPERATIONAL</p>
+                <p className="text-xs md:text-sm font-medium text-success tracking-wide mt-4">OPERATIONAL</p>
               </CardContent>
             </Card>
 
@@ -207,9 +226,9 @@ export default function VisualizationsPage() {
                   NETWORK HEALTH
                 </CardTitle>
               </CardHeader>
-              <CardContent className="bg-accent pt-2 md:pt-6">
+              <CardContent className="bg-accent pt-6 rounded-b-lg">
                 <p className="text-4xl md:text-5xl font-display">99.9%</p>
-                <p className="text-xs md:text-sm font-medium text-success tracking-wide mt-2">UPTIME</p>
+                <p className="text-xs md:text-sm font-medium text-success tracking-wide mt-4">UPTIME</p>
               </CardContent>
             </Card>
           </div>

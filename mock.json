@@ -123,17 +123,15 @@
       "id": 1,
       "name": "MAGIC EDEN",
       "handle": "@MAGICEDEN",
-      "streak": "TOP PROGRAM 🔥",
+      "subtitle": "TOP PROGRAM 🔥",
       "points": 2847,
       "avatar": "/avatars/user_krimson.png",
-      "featured": true,
-      "subtitle": "TOP PROGRAM 🔥"
+      "featured": true
     },
     {
       "id": 2,
       "name": "RAYDIUM",
       "handle": "@RAYDIUM",
-      "streak": "",
       "points": 2129,
       "avatar": "/avatars/user_mati.png"
     },
@@ -141,7 +139,6 @@
       "id": 3,
       "name": "ORCA",
       "handle": "@ORCA",
-      "streak": "",
       "points": 1908,
       "avatar": "/avatars/user_pek.png"
     },
@@ -149,7 +146,6 @@
       "id": 4,
       "name": "PHANTOM",
       "handle": "@PHANTOM",
-      "streak": "",
       "points": 1564,
       "avatar": "/avatars/user_joyboy.png"
     }

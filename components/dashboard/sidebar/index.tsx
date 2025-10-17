@@ -67,6 +67,12 @@ const data = {
           isActive: false,
         },
         {
+          title: "Documentation",
+          url: "/documentation",
+          icon: BracketsIcon,
+          isActive: false,
+        },
+        {
           title: "Settings",
           url: "/settings",
           icon: GearIcon,
@@ -114,7 +120,7 @@ export function DashboardSidebar({ className, ...props }: React.ComponentProps<t
                 {group.items.map((item) => (
                   <SidebarMenuItem
                     key={item.title}
-                    className={cn(item.locked && "pointer-events-none opacity-50", isV0 && "pointer-events-none")}
+                    className={cn(item.locked && "pointer-events-none opacity-50")}
                     data-disabled={item.locked}
                   >
                     <SidebarMenuButton
