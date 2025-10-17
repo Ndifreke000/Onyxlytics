@@ -1,0 +1,222 @@
+{
+  "dashboardStats": [
+    {
+      "label": "TRANSACTIONS/SEC",
+      "value": "2,847",
+      "description": "CURRENT TPS",
+      "intent": "positive",
+      "icon": "gear",
+      "direction": "up"
+    },
+    {
+      "label": "NETWORK TVL",
+      "value": "$8.2B",
+      "description": "TOTAL VALUE LOCKED",
+      "intent": "positive",
+      "icon": "proccesor",
+      "direction": "up"
+    },
+    {
+      "label": "ACTIVE WALLETS",
+      "value": "1.2M",
+      "description": "24H ACTIVE ADDRESSES",
+      "intent": "positive",
+      "icon": "boom",
+      "tag": "↑ 12% 📈"
+    }
+  ],
+  "chartData": {
+    "week": [
+      {
+        "date": "06/07",
+        "tps": 1200,
+        "tvl": 5200000000,
+        "volume": 450000000
+      },
+      {
+        "date": "07/07",
+        "tps": 2500,
+        "tvl": 6800000000,
+        "volume": 1200000000
+      },
+      {
+        "date": "08/07",
+        "tps": 2000,
+        "tvl": 7200000000,
+        "volume": 950000000
+      },
+      {
+        "date": "09/07",
+        "tps": 2800,
+        "tvl": 7900000000,
+        "volume": 1450000000
+      },
+      {
+        "date": "10/07",
+        "tps": 1200,
+        "tvl": 6500000000,
+        "volume": 620000000
+      },
+      {
+        "date": "11/07",
+        "tps": 1800,
+        "tvl": 7100000000,
+        "volume": 890000000
+      },
+      {
+        "date": "12/07",
+        "tps": 3100,
+        "tvl": 8200000000,
+        "volume": 1800000000
+      },
+      {
+        "date": "13/07",
+        "tps": 1300,
+        "tvl": 7600000000,
+        "volume": 750000000
+      }
+    ],
+    "month": [
+      { "date": "Jan", "tps": 1800, "tvl": 4500000000, "volume": 2500000000 },
+      { "date": "Feb", "tps": 1500, "tvl": 5200000000, "volume": 2000000000 },
+      { "date": "Mar", "tps": 2200, "tvl": 6500000000, "volume": 3500000000 },
+      { "date": "Apr", "tps": 1600, "tvl": 5800000000, "volume": 1800000000 },
+      { "date": "May", "tps": 2800, "tvl": 7200000000, "volume": 4500000000 },
+      { "date": "Jun", "tps": 1900, "tvl": 6100000000, "volume": 2500000000 },
+      { "date": "Jul", "tps": 2400, "tvl": 7600000000, "volume": 4000000000 },
+      { "date": "Aug", "tps": 2100, "tvl": 7100000000, "volume": 3000000000 },
+      { "date": "Sep", "tps": 2600, "tvl": 7800000000, "volume": 3500000000 },
+      { "date": "Oct", "tps": 1700, "tvl": 6200000000, "volume": 2200000000 },
+      { "date": "Nov", "tps": 2900, "tvl": 8100000000, "volume": 3800000000 },
+      { "date": "Dec", "tps": 3200, "tvl": 8500000000, "volume": 5000000000 }
+    ],
+    "year": [
+      {
+        "date": "2020",
+        "tps": 800,
+        "tvl": 2800000000,
+        "volume": 15000000000
+      },
+      {
+        "date": "2021",
+        "tps": 1200,
+        "tvl": 3200000000,
+        "volume": 18000000000
+      },
+      {
+        "date": "2022",
+        "tps": 1800,
+        "tvl": 4500000000,
+        "volume": 25000000000
+      },
+      {
+        "date": "2023",
+        "tps": 1400,
+        "tvl": 5200000000,
+        "volume": 12000000000
+      },
+      { "date": "2024", "tps": 2400, "tvl": 8200000000, "volume": 20000000000 }
+    ]
+  },
+  "rebelsRanking": [
+    {
+      "id": 1,
+      "name": "MAGIC EDEN",
+      "handle": "@MAGICEDEN",
+      "streak": "TOP PROGRAM 🔥",
+      "points": 2847,
+      "avatar": "/avatars/user_krimson.png",
+      "featured": true,
+      "subtitle": "TOP PROGRAM 🔥"
+    },
+    {
+      "id": 2,
+      "name": "RAYDIUM",
+      "handle": "@RAYDIUM",
+      "streak": "",
+      "points": 2129,
+      "avatar": "/avatars/user_mati.png"
+    },
+    {
+      "id": 3,
+      "name": "ORCA",
+      "handle": "@ORCA",
+      "streak": "",
+      "points": 1908,
+      "avatar": "/avatars/user_pek.png"
+    },
+    {
+      "id": 4,
+      "name": "PHANTOM",
+      "handle": "@PHANTOM",
+      "streak": "",
+      "points": 1564,
+      "avatar": "/avatars/user_joyboy.png"
+    }
+  ],
+  "securityStatus": [
+    {
+      "title": "NETWORK STATUS",
+      "value": "HEALTHY",
+      "status": "[OPERATIONAL]",
+      "variant": "success"
+    },
+    {
+      "title": "VALIDATOR NODES",
+      "value": "3,847",
+      "status": "[ACTIVE]",
+      "variant": "success"
+    },
+    {
+      "title": "SLOT TIME",
+      "value": "412ms",
+      "status": "[OPTIMAL]",
+      "variant": "success"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "title": "NETWORK SPIKE",
+      "message": "TPS reached 3,200 - highest in 30 days. Validator performance optimal.",
+      "timestamp": "2024-07-10T13:39:00Z",
+      "type": "success",
+      "read": false,
+      "priority": "medium"
+    },
+    {
+      "id": "notif-2",
+      "title": "NEW QUERY SAVED",
+      "message": "Your 'Daily TVL Trend' query has been saved and is ready to use.",
+      "timestamp": "2024-07-10T13:35:00Z",
+      "type": "info",
+      "read": false,
+      "priority": "low"
+    },
+    {
+      "id": "notif-3",
+      "title": "DATA SYNC COMPLETE",
+      "message": "Solana blockchain data synchronized. Latest block: 247,582,941.",
+      "timestamp": "2024-07-10T12:15:00Z",
+      "type": "info",
+      "read": true,
+      "priority": "medium"
+    },
+    {
+      "id": "notif-4",
+      "title": "ANOMALY DETECTED",
+      "message": "Unusual transaction pattern detected in Magic Eden. Review recommended.",
+      "timestamp": "2024-07-10T11:45:00Z",
+      "type": "warning",
+      "read": true,
+      "priority": "high"
+    }
+  ],
+  "widgetData": {
+    "location": "Solana Mainnet",
+    "timezone": "UTC",
+    "temperature": "HEALTHY",
+    "weather": "Optimal Performance",
+    "date": "Wednesday, July 10th, 2025"
+  }
+}
