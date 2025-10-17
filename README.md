@@ -1,5 +1,4 @@
-# Dashboard – M.O.N.K.Y
-## Onyxlytics — Solana Analytics Dashboard
+# Onyxlytics — Solana Analytics Dashboard
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/ndifreke000s-projects/v0-dashboard-m-o-n-k-y)
 
