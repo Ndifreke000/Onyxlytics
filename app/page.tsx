@@ -6,7 +6,6 @@ import DashboardChart from "@/components/dashboard/chart"
 import RebelsRanking from "@/components/dashboard/rebels-ranking"
 import SecurityStatus from "@/components/dashboard/security-status"
 import BracketsIcon from "@/components/icons/brackets"
-import GearIcon from "@/components/icons/gear"
 import ProcessorIcon from "@/components/icons/proccesor"
 import BoomIcon from "@/components/icons/boom"
 import mockDataJson from "@/mock.json"
@@ -15,15 +14,13 @@ import type { MockData, DashboardStat as DashboardStatType } from "@/types/dashb
 
 const mockData = mockDataJson as MockData
 
-// Icon mapping
 const iconMap = {
-  gear: GearIcon,
   proccesor: ProcessorIcon,
   boom: BoomIcon,
 }
 
 export default function DashboardOverview() {
-  const { metrics } = useSolanaMetrics(5000)
+  const { metrics } = useSolanaMetrics(1000)
 
   const liveStats: DashboardStatType[] = [
     {
@@ -31,7 +28,7 @@ export default function DashboardOverview() {
       value: metrics.tps.toString(),
       description: "CURRENT TPS",
       intent: "positive",
-      icon: "gear",
+      icon: "proccesor",
       direction: "up",
     },
     {
@@ -79,7 +76,6 @@ export default function DashboardOverview() {
         <DashboardChart />
       </div>
 
-      {/* Main 2-column grid section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <RebelsRanking rebels={mockData.rebelsRanking} />
         <SecurityStatus statuses={mockData.securityStatus} />

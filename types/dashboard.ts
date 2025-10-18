@@ -66,7 +66,7 @@ export interface MockData {
   widgetData: WidgetData
 }
 
-export type TimePeriod = "week" | "month" | "year"
+export type TimePeriod = "instantly" | "day" | "week" | "month" | "year"
 
 export interface SavedQuery {
   id: string

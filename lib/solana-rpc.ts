@@ -1,4 +1,4 @@
-// Solana RPC client for fetching blockchain data
+// Solana RPC client for fetching blockchain data with intelligent caching and rate limiting
 const RPC_URL = "https://api.mainnet-beta.solana.com"
 
 interface RpcRequest {
@@ -8,44 +8,84 @@ interface RpcRequest {
   params: unknown[]
 }
 
+// Cache for RPC responses with TTL
+const responseCache = new Map<string, { data: unknown; timestamp: number }>()
+const CACHE_TTL = 2000 // 2 seconds
+
+// Request queue to prevent rate limiting
+const requestQueue: Array<() => Promise<unknown>> = []
+let isProcessing = false
+const REQUEST_DELAY = 100 // ms between requests
+
+async function processRequestQueue() {
+  if (isProcessing || requestQueue.length === 0) return
+
+  isProcessing = true
+  while (requestQueue.length > 0) {
+    const request = requestQueue.shift()
+    if (request) {
+      try {
+        await request()
+      } catch (error) {
+        console.error("[v0] Queue request failed:", error)
+      }
+      await new Promise((resolve) => setTimeout(resolve, REQUEST_DELAY))
+    }
+  }
+  isProcessing = false
+}
+
 async function makeRpcCall(method: string, params: unknown[] = []): Promise<unknown> {
-  const request: RpcRequest = {
-    jsonrpc: "2.0",
-    id: 1,
-    method,
-    params,
+  const cacheKey = `${method}:${JSON.stringify(params)}`
+
+  // Check cache first
+  const cached = responseCache.get(cacheKey)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[v0] Cache hit for ${method}`)
+    return cached.data
   }
 
-  try {
-    const response = await fetch(RPC_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
+  return new Promise((resolve, reject) => {
+    requestQueue.push(async () => {
+      const request: RpcRequest = {
+        jsonrpc: "2.0",
+        id: 1,
+        method,
+        params,
+      }
+
+      try {
+        const response = await fetch(RPC_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        })
+
+        const data = (await response.json()) as { result?: unknown; error?: unknown }
+        if (data.error) {
+          throw new Error(`RPC Error: ${JSON.stringify(data.error)}`)
+        }
+
+        // Cache successful response
+        responseCache.set(cacheKey, { data: data.result, timestamp: Date.now() })
+        resolve(data.result)
+      } catch (error) {
+        console.error(`[v0] RPC call failed for ${method}:`, error)
+        reject(error)
+      }
     })
 
-    const data = (await response.json()) as { result?: unknown; error?: unknown }
-    if (data.error) {
-      throw new Error(`RPC Error: ${JSON.stringify(data.error)}`)
-    }
-    return data.result
-  } catch (error) {
-    console.error(`[v0] RPC call failed for ${method}:`, error)
-    throw error
-  }
+    processRequestQueue()
+  })
 }
 
 export async function getSolanaMetrics() {
   try {
-    const [slotInfo, supply, versionInfo] = await Promise.all([
-      makeRpcCall("getSlot"),
-      makeRpcCall("getSupply"),
-      makeRpcCall("getVersion"),
-    ])
+    const [slotInfo, supply] = await Promise.all([makeRpcCall("getSlot"), makeRpcCall("getSupply")])
 
     return {
       slot: slotInfo,
       supply,
-      version: versionInfo,
       timestamp: new Date().toISOString(),
     }
   } catch (error) {
@@ -85,8 +125,6 @@ export async function getBlockTime(slot: number) {
 }
 
 export async function executeQuery(query: string) {
-  // Parse and execute custom queries
-  // This is a simplified version - in production, you'd want more robust parsing
   const lowerQuery = query.toLowerCase()
 
   if (lowerQuery.includes("slot")) {

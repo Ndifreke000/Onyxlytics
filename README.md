@@ -168,15 +168,15 @@ Prerequisites: Node.js 18+, pnpm (or npm/yarn)
 
 1. Install dependencies
 
-```bash
+\`\`\`bash
 pnpm install
-```
+\`\`\`
 
 2. Run development server
 
-```bash
+\`\`\`bash
 pnpm dev
-```
+\`\`\`
 
 3. Open http://localhost:3000
 
