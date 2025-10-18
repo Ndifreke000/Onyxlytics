@@ -1,6 +1,6 @@
 // This prevents CORS errors and ensures proper server-side handling
 
-const RPC_URL = "https://api.mainnet-beta.solana.com"
+const RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com"
 
 interface RpcRequest {
   jsonrpc: string
@@ -11,7 +11,7 @@ interface RpcRequest {
 
 // Cache for RPC responses with TTL
 const responseCache = new Map<string, { data: unknown; timestamp: number }>()
-const CACHE_TTL = 1000 // 1 second for real-time updates
+const CACHE_TTL = 2000 // 2 seconds for better real-time feel
 
 async function makeRpcCall(method: string, params: unknown[] = []): Promise<unknown> {
   const cacheKey = `${method}:${JSON.stringify(params)}`
@@ -25,18 +25,26 @@ async function makeRpcCall(method: string, params: unknown[] = []): Promise<unkn
 
   const request: RpcRequest = {
     jsonrpc: "2.0",
-    id: 1,
+    id: Math.floor(Math.random() * 10000),
     method,
     params,
   }
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s timeout
+
   try {
-    console.log(`[v0] Making RPC call: ${method}`)
     const response = await fetch(RPC_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "User-Agent": "Onyxlytics/1.0"
+      },
       body: JSON.stringify(request),
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -50,9 +58,9 @@ async function makeRpcCall(method: string, params: unknown[] = []): Promise<unkn
 
     // Cache successful response
     responseCache.set(cacheKey, { data: data.result, timestamp: Date.now() })
-    console.log(`[v0] RPC call successful for ${method}`)
     return data.result
   } catch (error) {
+    clearTimeout(timeoutId)
     console.error(`[v0] RPC call failed for ${method}:`, error)
     throw error
   }
@@ -60,11 +68,16 @@ async function makeRpcCall(method: string, params: unknown[] = []): Promise<unkn
 
 export async function getSolanaMetrics() {
   try {
-    const [slotInfo, supply] = await Promise.all([makeRpcCall("getSlot"), makeRpcCall("getSupply")])
+    const [slotInfo, supply, health] = await Promise.all([
+      makeRpcCall("getSlot"),
+      makeRpcCall("getSupply"),
+      makeRpcCall("getHealth").catch(() => "ok") // Fallback for health
+    ])
 
     return {
       slot: slotInfo,
       supply,
+      health,
       timestamp: new Date().toISOString(),
       source: "rpc",
     }

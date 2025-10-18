@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bullet } from "@/components/ui/bullet"
 import { getSavedQueries, saveQuery, deleteQuery, updateQueryLastRun } from "@/lib/queries"
 import { exampleQueries } from "@/lib/example-queries"
 import type { SavedQuery } from "@/lib/queries"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 
 export default function QueryEditor() {
   const [query, setQuery] = useState("")
@@ -18,6 +19,9 @@ export default function QueryEditor() {
   const [queryName, setQueryName] = useState("")
   const [queryDescription, setQueryDescription] = useState("")
   const [showExamples, setShowExamples] = useState(true)
+  const [chartData, setChartData] = useState<any[]>([])
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const executeQuery = async () => {
     if (!query.trim()) {
@@ -40,6 +44,18 @@ export default function QueryEditor() {
 
       if (data.success) {
         setResult(data.result)
+        // Generate chart data if result is array-like
+        if (Array.isArray(data.result)) {
+          setChartData(data.result.slice(0, 20)) // Limit to 20 points
+        } else if (typeof data.result === 'object' && data.result) {
+          // Convert object to chart-friendly format
+          const entries = Object.entries(data.result).map(([key, value], index) => ({
+            name: key,
+            value: typeof value === 'number' ? value : index,
+            index
+          }))
+          setChartData(entries)
+        }
       } else {
         setError(data.error || "Query execution failed")
       }
@@ -61,12 +77,19 @@ export default function QueryEditor() {
       query,
       description: queryDescription,
       tags: [],
+      result: result,
+      chartData: chartData
     })
 
     setSavedQueries([...savedQueries, newQuery])
     setQueryName("")
     setQueryDescription("")
     setShowSaveDialog(false)
+    
+    // Generate shareable URL
+    const shareId = newQuery.id
+    const url = `${window.location.origin}/shared-query/${shareId}`
+    setShareUrl(url)
   }
 
   const handleLoadQuery = (savedQuery: SavedQuery) => {
@@ -98,10 +121,12 @@ export default function QueryEditor() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">ENTER SOLANA QUERY</label>
             <textarea
+              ref={textareaRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Example: SELECT slot, validators, transaction_count FROM solana_network"
-              className="w-full h-32 p-3 bg-accent border border-muted rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Example: SELECT slot, validators, transaction_count FROM solana_network\n\nSupported queries:\n- Network metrics: slot, supply, validators\n- Transaction data: transaction_count, recent_blocks\n- Account info: account_balance, token_info"
+              className="w-full h-80 p-4 bg-accent border border-muted rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+              style={{ minHeight: '320px', maxHeight: '600px' }}
             />
           </div>
 
@@ -121,9 +146,48 @@ export default function QueryEditor() {
           )}
 
           {result && (
-            <div className="p-3 bg-accent rounded-lg border border-muted">
-              <p className="text-xs font-medium text-muted-foreground mb-2">RESULT</p>
-              <pre className="text-xs overflow-auto max-h-48 text-foreground">{JSON.stringify(result, null, 2)}</pre>
+            <div className="space-y-4">
+              {/* Chart Visualization */}
+              {chartData.length > 0 && (
+                <div className="p-4 bg-accent rounded-lg border border-muted">
+                  <p className="text-xs font-medium text-muted-foreground mb-3">VISUALIZATION</p>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--muted-foreground)" opacity={0.3} />
+                        <XAxis dataKey="name" className="text-xs fill-muted-foreground" />
+                        <YAxis className="text-xs fill-muted-foreground" />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="var(--chart-1)" 
+                          fill="var(--chart-1)" 
+                          fillOpacity={0.3}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+              
+              {/* Raw Result */}
+              <div className="p-4 bg-accent rounded-lg border border-muted">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-medium text-muted-foreground">RAW RESULT</p>
+                  {shareUrl && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => navigator.clipboard.writeText(shareUrl)}
+                    >
+                      COPY SHARE LINK
+                    </Button>
+                  )}
+                </div>
+                <pre className="text-xs overflow-auto max-h-64 text-foreground bg-background p-3 rounded border">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              </div>
             </div>
           )}
         </CardContent>

@@ -73,6 +73,12 @@ const data = {
           isActive: false,
         },
         {
+          title: "Contract EDA",
+          url: "/contract-eda",
+          icon: ProcessorIcon,
+          isActive: false,
+        },
+        {
           title: "Settings",
           url: "/settings",
           icon: GearIcon,

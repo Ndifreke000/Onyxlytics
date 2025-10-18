@@ -7,6 +7,8 @@ export interface SavedQuery {
   createdAt: string
   lastRun?: string
   tags: string[]
+  result?: any
+  chartData?: any[]
 }
 
 const STORAGE_KEY = "onyxlytics_saved_queries"
@@ -20,7 +22,7 @@ export function getSavedQueries(): SavedQuery[] {
 export function saveQuery(query: Omit<SavedQuery, "id" | "createdAt">): SavedQuery {
   const newQuery: SavedQuery = {
     ...query,
-    id: `query_${Date.now()}`,
+    id: `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date().toISOString(),
   }
 
@@ -28,6 +30,11 @@ export function saveQuery(query: Omit<SavedQuery, "id" | "createdAt">): SavedQue
   queries.push(newQuery)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(queries))
   return newQuery
+}
+
+export function getQueryById(id: string): SavedQuery | null {
+  const queries = getSavedQueries()
+  return queries.find(q => q.id === id) || null
 }
 
 export function deleteQuery(id: string): void {
