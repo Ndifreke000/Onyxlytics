@@ -23,30 +23,40 @@ Visual architecture (Mermaid)
 
 ```mermaid
 flowchart LR
-  subgraph Client
-    A[Browser / Mobile]
-  end
+    A[Client] --> B[Frontend]
+    B --> C[API Layer]
+    C --> D[(Database)]
+    C --> E[(Storage)]
+    C --> F[Contracts]
+    
+    subgraph Client
+        A
+    end
+    
+    subgraph Frontend
+        B
+        direction TB
+        B1[Next.js Routes]
+        B2[Components]
+        B3[Hooks]
+    end
+    
+    subgraph "API Layer"
+        C
+        direction TB
+        C1[REST APIs]
+        C2[RPC Client]
+    end
+    
+    subgraph Backend
+        D
+        E
+        F
+    end
 
-  subgraph Frontend
-    B[Next.js app<br/> (app/ + components/)]
-  end
-
-  subgraph Edge/API
-    C[Serverless API Routes<br/>(`app/api/*`)]
-  end
-
-  subgraph Backend
-    D[Postgres / Supabase / Prisma]
-    E[Blob store (S3 / Supabase Storage)]
-    F[Solana Programs / Rust Contracts]
-  end
-
-  A --> B
-  B --> C
-  C --> D
-  C --> E
-  C --> F
-  B -->|rpc| lib/solana-rpc.ts
+    %% Direct client calls
+    B --> C2
+    C2 --> F
 ```
 
 Sequence: Sign up / sign in
@@ -54,15 +64,11 @@ Sequence: Sign up / sign in
 
 ```mermaid
 sequenceDiagram
-  participant U as User
-  participant F as Frontend
-  participant A as Auth Server / NextAuth
-  participant DB as Postgres
-  U->>F: Submit sign-up form
-  F->>A: Create user (email/password or OAuth)
-  A->>DB: Persist user
-  A-->>F: Session token
-  F-->>U: Authenticated session
+    User->>Frontend: Sign up
+    Frontend->>Auth: Create account
+    Auth->>Database: Save user
+    Auth-->>Frontend: Token
+    Frontend-->>User: Success
 ```
 
 Animated visuals
