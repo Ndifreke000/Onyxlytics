@@ -11,6 +11,7 @@ export interface SolanaMetrics {
   networkStatus: "healthy" | "degraded" | "critical"
   lastUpdate: string
   isLive: boolean
+  source: "rpc" | "fallback"
 }
 
 const defaultMetrics: SolanaMetrics = {
@@ -22,38 +23,15 @@ const defaultMetrics: SolanaMetrics = {
   networkStatus: "healthy",
   lastUpdate: new Date().toISOString(),
   isLive: false,
+  source: "fallback",
 }
 
-export function useSolanaMetrics(refreshInterval = 5000) {
+export function useSolanaMetrics(refreshInterval = 1000) {
   const [metrics, setMetrics] = useState<SolanaMetrics>(defaultMetrics)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const isMountedRef = useRef(true)
-
-  // Simulate realistic metric variations for demo
-  const simulateMetricUpdate = () => {
-    setMetrics((prev) => {
-      if (!isMountedRef.current) return prev
-
-      const newTps = Math.floor(2800 + Math.random() * 200)
-      const newTvl = `$${(8.1 + Math.random() * 0.3).toFixed(1)}B`
-      const newWallets = `${(1.1 + Math.random() * 0.2).toFixed(1)}M`
-
-      console.log(`[v0] Metrics updated - TPS: ${newTps}, TVL: ${newTvl}, Wallets: ${newWallets}`)
-
-      return {
-        ...prev,
-        tps: newTps,
-        tvl: newTvl,
-        activeWallets: newWallets,
-        validatorCount: 3847 + Math.floor(Math.random() * 50 - 25),
-        avgSlotTime: 410 + Math.floor(Math.random() * 10),
-        lastUpdate: new Date().toISOString(),
-        isLive: true,
-      }
-    })
-  }
 
   useEffect(() => {
     isMountedRef.current = true
@@ -62,39 +40,59 @@ export function useSolanaMetrics(refreshInterval = 5000) {
       if (!isMountedRef.current) return
 
       try {
+        console.log("[v0] Fetching metrics from API...")
         const response = await fetch("/api/solana/metrics", {
-          cache: "no-store", // Prevent caching of API responses
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
         })
 
-        if (!response.ok) throw new Error(`API error: ${response.status}`)
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
 
-        const data = (await response.json()) as {
+        const result = (await response.json()) as {
           success: boolean
           data?: {
+            tps?: number
+            tvl?: string
+            activeWallets?: string
             validatorCount?: number
             avgSlotTime?: number
+            timestamp?: string
+            source?: "rpc" | "fallback"
           }
+          error?: string
         }
 
-        if (isMountedRef.current) {
-          if (data.success && data.data) {
-            setMetrics((prev) => ({
-              ...prev,
-              validatorCount: data.data?.validatorCount || prev.validatorCount,
-              avgSlotTime: data.data?.avgSlotTime || prev.avgSlotTime,
-              lastUpdate: new Date().toISOString(),
-              isLive: true,
-            }))
-            setError(null)
-          } else {
-            simulateMetricUpdate()
+        if (!isMountedRef.current) return
+
+        if (result.data) {
+          const newMetrics: SolanaMetrics = {
+            tps: result.data.tps ?? defaultMetrics.tps,
+            tvl: result.data.tvl ?? defaultMetrics.tvl,
+            activeWallets: result.data.activeWallets ?? defaultMetrics.activeWallets,
+            validatorCount: result.data.validatorCount ?? defaultMetrics.validatorCount,
+            avgSlotTime: result.data.avgSlotTime ?? defaultMetrics.avgSlotTime,
+            networkStatus: "healthy",
+            lastUpdate: result.data.timestamp ?? new Date().toISOString(),
+            isLive: result.data.source === "rpc",
+            source: result.data.source ?? "fallback",
           }
-          setLoading(false)
+
+          console.log(
+            `[v0] Metrics updated - TPS: ${newMetrics.tps}, TVL: ${newMetrics.tvl}, Source: ${newMetrics.source}`,
+          )
+
+          setMetrics(newMetrics)
+          setError(null)
         }
+
+        setLoading(false)
       } catch (err) {
         console.error("[v0] Failed to fetch metrics:", err)
         if (isMountedRef.current) {
-          simulateMetricUpdate()
           setError(err instanceof Error ? err.message : "Failed to fetch metrics")
           setLoading(false)
         }
@@ -104,7 +102,6 @@ export function useSolanaMetrics(refreshInterval = 5000) {
     // Initial fetch
     fetchMetrics()
 
-    // Set up interval with proper cleanup
     intervalRef.current = setInterval(fetchMetrics, refreshInterval)
 
     return () => {

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import DashboardPageLayout from "@/components/dashboard/layout"
 import DashboardStat from "@/components/dashboard/stat"
 import DashboardChart from "@/components/dashboard/chart"
@@ -20,7 +21,16 @@ const iconMap = {
 }
 
 export default function DashboardOverview() {
-  const { metrics } = useSolanaMetrics(1000)
+  const { metrics, loading } = useSolanaMetrics(1000)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return null
+  }
 
   const liveStats: DashboardStatType[] = [
     {
