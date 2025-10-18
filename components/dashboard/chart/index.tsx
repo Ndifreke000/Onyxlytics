@@ -41,14 +41,20 @@ export default function DashboardChart() {
   const isMountedRef = useRef(true)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Generate realistic chart data updates
+  // Generate realistic chart data updates with smoother transitions
   const generateUpdatedChartData = (currentData: ChartDataPoint[]): ChartDataPoint[] => {
-    return currentData.map((point) => ({
-      ...point,
-      tps: Math.floor(point.tps + (Math.random() - 0.5) * 100),
-      tvl: point.tvl + (Math.random() - 0.5) * 50,
-      volume: point.volume + (Math.random() - 0.5) * 200,
-    }))
+    const now = Date.now()
+    return currentData.map((point, index) => {
+      const timeVariation = Math.sin(now / 5000 + index * 0.5) * 0.3
+      const trendVariation = Math.cos(now / 8000 + index * 0.3) * 0.2
+      
+      return {
+        ...point,
+        tps: Math.max(100, Math.floor(point.tps * (1 + (timeVariation + trendVariation) * 0.1) + (Math.random() - 0.5) * 50)),
+        tvl: Math.max(1, point.tvl * (1 + (timeVariation + trendVariation) * 0.05) + (Math.random() - 0.5) * 20),
+        volume: Math.max(10, point.volume * (1 + (timeVariation + trendVariation) * 0.08) + (Math.random() - 0.5) * 100),
+      }
+    })
   }
 
   useEffect(() => {
@@ -71,7 +77,6 @@ export default function DashboardChart() {
             // Update chart with new data
             setChartData((prev) => generateUpdatedChartData(prev))
             setIsLive(true)
-            console.log("[v0] Chart data updated from API")
           }
         }
       } catch (error) {
@@ -79,7 +84,7 @@ export default function DashboardChart() {
         if (isMountedRef.current) {
           // Fallback to simulated updates
           setChartData((prev) => generateUpdatedChartData(prev))
-          setIsLive(true)
+          setIsLive(false)
         }
       }
     }
@@ -91,17 +96,17 @@ export default function DashboardChart() {
     const getRefreshInterval = (period: TimePeriod): number => {
       switch (period) {
         case "instantly":
-          return 1000 // 1 second
+          return 500 // 500ms for very smooth movement
         case "day":
-          return 5000 // 5 seconds
+          return 1000 // 1 second
         case "week":
-          return 10000 // 10 seconds
+          return 2000 // 2 seconds
         case "month":
-          return 30000 // 30 seconds
+          return 4000 // 4 seconds
         case "year":
-          return 60000 // 1 minute
+          return 8000 // 8 seconds
         default:
-          return 5000
+          return 1000
       }
     }
 

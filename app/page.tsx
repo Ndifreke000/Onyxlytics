@@ -6,12 +6,15 @@ import DashboardStat from "@/components/dashboard/stat"
 import DashboardChart from "@/components/dashboard/chart"
 import RebelsRanking from "@/components/dashboard/rebels-ranking"
 import SecurityStatus from "@/components/dashboard/security-status"
+import SavedQueryWidget from "@/components/dashboard/saved-query-widget"
 import BracketsIcon from "@/components/icons/brackets"
 import ProcessorIcon from "@/components/icons/proccesor"
 import BoomIcon from "@/components/icons/boom"
 import mockDataJson from "@/mock.json"
 import { useSolanaMetrics } from "@/hooks/use-solana-metrics"
+import { getSavedQueries } from "@/lib/queries"
 import type { MockData, DashboardStat as DashboardStatType } from "@/types/dashboard"
+import type { SavedQuery } from "@/lib/queries"
 
 const mockData = mockDataJson as MockData
 
@@ -23,9 +26,11 @@ const iconMap = {
 export default function DashboardOverview() {
   const { metrics, loading } = useSolanaMetrics(1000)
   const [isClient, setIsClient] = useState(false)
+  const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([])
 
   useEffect(() => {
     setIsClient(true)
+    setSavedQueries(getSavedQueries().slice(0, 4)) // Show max 4 widgets
   }, [])
 
   if (!isClient) {
@@ -90,6 +95,20 @@ export default function DashboardOverview() {
         <RebelsRanking rebels={mockData.rebelsRanking} />
         <SecurityStatus statuses={mockData.securityStatus} />
       </div>
+
+      {savedQueries.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-display mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 bg-primary rounded-full"></span>
+            SAVED QUERIES
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {savedQueries.map((query) => (
+              <SavedQueryWidget key={query.id} query={query} />
+            ))}
+          </div>
+        </div>
+      )}
     </DashboardPageLayout>
   )
 }
