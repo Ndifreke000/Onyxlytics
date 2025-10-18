@@ -1,3 +1,247 @@
+## Onyxlytics — 2025
+
+![Onyxlytics](public/assets/logo.png)
+
+Build status: ⚠️ (push to GitHub triggers Vercel; make sure `pnpm-lock.yaml` is up to date)
+
+Short description
+-----------------
+
+Onyxlytics is a developer-first analytics and query collaboration platform built with Next.js (app router), modern React, and an extensible backend surface that integrates with blockchain contracts (Solana) and traditional storage/DB layers. This README explains the architecture, how to run locally, and where to extend the system (including adding Rust contracts).
+
+Quick links
+-----------
+
+- App entry: `app/page.tsx`
+- API routes: `app/api/*` and `app/api/solana/*`
+- UI components: `components/` and `components/dashboard/`
+- Lib helpers: `lib/`
+- Solana EDA & RPC helpers: `lib/solana-eda.ts`, `lib/solana-rpc.ts`
+
+Visual architecture (Mermaid)
+----------------------------
+
+```mermaid
+flowchart LR
+  subgraph Client
+    A[Browser / Mobile]
+  end
+
+  subgraph Frontend
+    B[Next.js app<br/> (app/ + components/)]
+  end
+
+  subgraph Edge/API
+    C[Serverless API Routes<br/>(`app/api/*`)]
+  end
+
+  subgraph Backend
+    D[Postgres / Supabase / Prisma]
+    E[Blob store (S3 / Supabase Storage)]
+    F[Solana Programs / Rust Contracts]
+  end
+
+  A --> B
+  B --> C
+  C --> D
+  C --> E
+  C --> F
+  B -->|rpc| lib/solana-rpc.ts
+```
+
+Sequence: Sign up / sign in
+--------------------------
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant F as Frontend
+  participant A as Auth Server / NextAuth
+  participant DB as Postgres
+  U->>F: Submit sign-up form
+  F->>A: Create user (email/password or OAuth)
+  A->>DB: Persist user
+  A-->>F: Session token
+  F-->>U: Authenticated session
+```
+
+Animated visuals
+----------------
+
+For animations, we recommend:
+
+- Using lightweight Lottie or small animated SVGs for the README and marketing pages.
+- Use mermaid live to generate interactive diagrams for developer docs.
+
+Local dev (recommended)
+-----------------------
+
+Prereqs:
+
+- Node 18+ and Corepack (pnpm via corepack)
+- pnpm (we recommend pnpm@10.x)
+- Rust & Solana tooling (optional if working with contracts)
+
+Commands:
+
+```bash
+# enable corepack and prepare pnpm
+corepack enable
+corepack prepare pnpm@10.x --activate
+
+# install deps
+pnpm install
+
+# run dev (Next.js)
+pnpm dev
+```
+
+Environment variables
+---------------------
+
+Create a `.env.local` with (example):
+
+```
+NEXT_PUBLIC_APP_NAME=Onyxlytics
+DATABASE_URL=postgres://user:pass@localhost:5432/onyx
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=replace-with-secure-random
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+SOLANA_RPC_URL=https://api.devnet.solana.com
+```
+
+Backend & Auth recommendations
+------------------------------
+
+- Use NextAuth (or Clerk/Supabase Auth) for session management. Add an adapter for Postgres (Prisma) or Supabase.
+- Keep auth logic in `app/api/auth/*` or a dedicated `/lib/auth.ts`.
+- Store user preferences and query metadata in Postgres. Use a simple schema:
+
+```sql
+-- users table (minimal)
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  image_url TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- saved_queries
+CREATE TABLE saved_queries (
+  id UUID PRIMARY KEY,
+  owner_id UUID REFERENCES users(id),
+  title TEXT,
+  body TEXT,
+  visibility TEXT DEFAULT 'private', -- public|org|private
+  created_at TIMESTAMP DEFAULT now()
+);
+```
+
+Sharing model: how users see others' queries
+-------------------------------------------
+
+- Each `saved_queries` row has a `visibility` field.
+  - private: only owner
+  - org: users in same organization/team
+  - public: visible to all authenticated users
+- When serving a list, filter by `visibility` and user/team membership. Example pseudocode:
+
+```js
+// server-side
+const queries = await db.query('select * from saved_queries where visibility = $1 or owner_id = $2', ['public', userId])
+```
+
+Settings UX (what to include)
+-----------------------------
+
+- Profile: display name, bio, upload avatar (to S3 / Supabase Storage)
+- Social links: Twitter/X handle, LinkedIn URL, GitHub
+- Security: change password, enable 2FA
+- Notifications: toggle email/digest preferences
+
+File upload (images):
+
+- Flow: Frontend uploads to signed URL endpoint (server generates signed URL to S3 or Supabase); server returns URL; frontend persists URL in user's profile.
+
+Minimal server flow:
+
+1. POST /api/uploads/request -> server returns signed URL
+2. Frontend PUTs file to signed URL
+3. Call PATCH /api/user/profile with image_url
+
+Social linking (Twitter/X & LinkedIn)
+------------------------------------
+
+- Use OAuth flows (recommended) or let users paste profile links.
+- For OAuth, create apps in Twitter/X and LinkedIn, add callback to `NEXTAUTH_URL/api/auth/callback/<provider>`.
+
+Contribution guide (high-level)
+-------------------------------
+
+- Fork -> branch (feat/<area>) -> PR with description and screenshots
+- Follow code style: TypeScript, Prettier, ESLint
+- Add tests for new features (Vitest / Jest + React Testing Library)
+- Run `pnpm lint` and `pnpm test` before PR
+
+Where to add Rust (Solana contracts)
+-----------------------------------
+
+Project layout suggestion for contracts:
+
+- Create a top-level `programs/` or `contracts/` directory for Rust programs.
+  - `contracts/price-oracle/` — contains Cargo.toml and Anchor.toml if using Anchor
+
+If you're using Anchor (recommended for Solana devs):
+
+1. Install Anchor + Solana CLI (see Anchor docs)
+2. Create program: `anchor init price_oracle`
+3. Build: `anchor build`
+4. Deploy to devnet: `anchor deploy --provider.cluster devnet`
+
+Integrating contracts with the app:
+
+- Add a client helper in `lib/solana-client.ts` or `lib/solana-rpc.ts` (there are already helpers in `lib/` in this repo).
+- Use `@solana/web3.js` in the frontend to call programs, or call server-side API routes that sign & submit transactions.
+
+Example contract dev workflow (local)
+
+```bash
+# in /contracts/price-oracle
+anchor build
+anchor test   # runs tests written in Rust
+anchor deploy --provider.cluster devnet
+
+# After deploy, update program IDs in frontend env
+```
+
+Security & privacy
+------------------
+
+- Avoid returning raw query contents for private queries.
+- Log access to shared queries; include audit entries in DB for sensitive operations.
+- Sanitize user-submitted SQL and use parameterized queries when executing.
+
+CI / Deployment notes
+---------------------
+
+- Vercel uses a frozen lockfile by default. If you change `package.json` update `pnpm-lock.yaml` and commit it. Alternatively set install command to `pnpm install --no-frozen-lockfile` in Vercel settings (not recommended for reproducibility).
+
+Where to get help
+-----------------
+
+- Create an issue in this repository describing the problem and include logs and steps to reproduce.
+
+License
+-------
+
+MIT — see `LICENSE` (add one if missing)
+
+Thanks
+------
+Thanks for contributing — see `CONTRIBUTING.md` for detailed developer workflows.
 # Onyxlytics — Solana Analytics Dashboard
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/ndifreke000s-projects/v0-dashboard-m-o-n-k-y)

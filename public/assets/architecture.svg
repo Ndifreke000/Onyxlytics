@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="400px" version="1.1" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+ <g fill="none" fill-rule="evenodd">
+  <rect width="800" height="400" fill="#f3f4f6"/>
+  <text x="300" y="200" fill="#4b5563" font-family="Arial" font-size="24" text-anchor="middle">
+   Architecture Diagram
+  </text>
+  <g transform="translate(100,150)">
+   <rect width="200" height="100" fill="#6366f1" rx="8"/>
+   <text x="100" y="55" fill="#fff" font-family="Arial" font-size="16" text-anchor="middle">
+    Frontend
+   </text>
+  </g>
+  <g transform="translate(500,150)">
+   <rect width="200" height="100" fill="#8b5cf6" rx="8"/>
+   <text x="100" y="55" fill="#fff" font-family="Arial" font-size="16" text-anchor="middle">
+    Backend
+   </text>
+  </g>
+  <path d="M300,200 L500,200" stroke="#4b5563" stroke-width="2"/>
+ </g>
+</svg>
